@@ -1,0 +1,6 @@
+__pycache__/
+*.pyc
+.env
+food-101-dataset/
+.pytest_cache/
+.venv/
