@@ -3,19 +3,7 @@ Image processing filters: grayscale, gaussian blur (3x3), sobel, sharpen, bright
 """
 from PIL import Image
 import numpy as np
-
-# Utility helpers
-
-def to_array(img: Image.Image) -> np.ndarray:
-    return np.array(img, dtype=np.float32)
-
-
-def to_image(arr: np.ndarray) -> Image.Image:
-    arr = np.clip(arr, 0, 255).astype(np.uint8)
-    if arr.ndim == 2:
-        return Image.fromarray(arr, mode='L')
-    return Image.fromarray(arr)
-
+from .utils import to_array, to_image
 
 # 1. Grayscale using luminance formula
 def grayscale(img: Image.Image) -> Image.Image:
