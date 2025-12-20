@@ -4,3 +4,4 @@ __pycache__/
 food-101-dataset/
 .pytest_cache/
 .venv/
+out/

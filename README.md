@@ -1,129 +1,164 @@
 # Parallel Image Processing Pipeline (CST435 Assignment 2)
 
-This project implements a high-performance image processing pipeline in Python, designed to compare **Serial** execution against two **Parallel** paradigms: `multiprocessing` (shared memory/spawning) and `concurrent.futures` (process pool). 
+## Prepared By:
+* **Tan Jun Lin** - 160989
+* **Peh Jia Jin** - 161059
+* **Ooi Tze Shen** - 165229
+* **Wan Shan Jie** - 163836
 
-The pipeline performs a sequence of computationally intensive filters on images from the Food-101 dataset.
+This repository implements a high-performance image processing pipeline in Python for CST435. It compares a **Serial** pipeline against two **Parallel** paradigms: `multiprocessing` (Pool) and `concurrent.futures` (ProcessPoolExecutor). The pipeline applies a sequence of computationally intensive filters to images from the Food-101 dataset.
+
+## Table of Contents
+
+- [Features](#features)
+- [Installation](#installation)
+- [Usage](#usage)
+- [Performance Analysis](#performance-analysis)
+- [Assignment Details](#assignment-details)
+- [Project Structure](#project-structure)
+- [Notes & Tips](#notes--tips)
+
+---
 
 ## 📋 Features
 
 ### Image Filters Implemented
-The pipeline applies the following 5 operations in order:
-1.  **Grayscale Conversion**: Uses standard luminance formula ($Y = 0.299R + 0.587G + 0.114B$).
-2.  **Gaussian Blur (3x3)**: Smooths image using a convolution kernel to reduce noise.
-3.  **Sobel Edge Detection**: Computes gradient magnitude using horizontal and vertical masks.
-4.  **Sharpening**: Enhances edges using an unsharp masking technique (`original + alpha * (original - blurred)`).
-5.  **Brightness Adjustment**: Direct pixel value modification.
+The pipeline applies the following five operations, in order:
+
+1. **Grayscale Conversion** — Uses the standard luminance formula: `Y = 0.299R + 0.587G + 0.114B`.
+2. **Gaussian Blur (3x3)** — Smooths images using a 3x3 convolution kernel to reduce noise.
+3. **Sobel Edge Detection** — Computes gradient magnitude using horizontal and vertical masks.
+4. **Sharpening (Unsharp Masking)** — `result = original + alpha * (original - blurred)` to enhance edges.
+5. **Brightness Adjustment** — Adjusts pixel values uniformly to increase/decrease brightness.
 
 ### Parallel Implementation
-* **Split Strategy**: Images are split into horizontal chunks.
-* **Overlap/Halo**: Implemented smart overlap (padding) between chunks to ensure convolution filters (Gaussian, Sobel) have no artifacts at chunk boundaries.
-* **Paradigms**:
-    * `multiprocessing`: Uses `multiprocessing.Pool`.
-    * `concurrent.futures`: Uses `ProcessPoolExecutor`.
+
+- **Split Strategy**: Images are split into horizontal chunks for parallel processing.
+- **Overlap / Halo**: Chunks include overlap rows so convolution kernels (Gaussian, Sobel) do not produce boundary artifacts.
+- **Implemented Paradigms**:
+  - `multiprocessing` using `multiprocessing.Pool`.
+  - `concurrent.futures` using `ProcessPoolExecutor`.
+
+---
 
 ## 🛠️ Installation
 
-1.  **Clone the repository** (if needed):
-    ```bash
-    git clone <repository_url>
-    cd CST435_Assignment2_ImageProcessing
-    ```
+1. Clone the repository:
 
-2.  **Create and Activate Virtual Environment**:
-    ```bash
-    python -m venv .venv
-    # Windows:
-    .venv\Scripts\activate
-    # Mac/Linux:
-    source .venv/bin/activate
-    ```
+```bash
+git clone <repository_url>
+cd CST435_Assignment2_ImageProcessing
+```
 
-3.  **Install Dependencies**:
-    ```bash
-    pip install -r requirements.txt
-    ```
+2. Create and activate a virtual environment:
+
+```bash
+python -m venv .venv
+# macOS / Linux
+source .venv/bin/activate
+# Windows
+.venv\Scripts\activate
+```
+
+3. Install dependencies:
+
+```bash
+pip install -r requirements.txt
+```
+
+---
 
 ## 🚀 Usage
 
-### 1. Run Pipeline on a Single Image
-Run the full pipeline (Serial, Multiprocessing, and Futures) on one image to visually verify results.
+> All commands should be run from the project root directory.
+
+### 1) Single Image Verification (`run_pipeline.py`)
+Run the serial and both parallel pipelines on a single image to verify that outputs match:
 
 ```bash
-python -m scripts.run_pipeline image_677963.png out/test_result --workers 4
+python -m scripts.run_pipeline <input_image> <output_prefix> [--workers N]
+
+# Example
+python -m scripts.run_pipeline image.png out/test_result --workers 4
 ```
 
-Input: Path to your image (e.g., image_677963.png).
+This produces files like `out/test_result_serial.png`, `out/test_result_mp.png`, `out/test_result_futures.png` for visual comparison.
 
-Output: Saves test_result_serial.png, test_result_mp.png, etc. to out/ folder.
-
-### 2. Standard Benchmarking
-Compare performance across typical worker counts (e.g., 1, 2, 4 CPUs).
+### 2) Benchmarking (`benchmark.py`)
+Run performance tests on a directory or single image.
 
 ```bash
-python -m scripts.benchmark --input food-101-dataset/images --outdir out/bench --workers 1 2 4 --sample 10
+python -m scripts.benchmark --input <path> --outdir <path> --workers 1 2 4 --sample 5
 ```
 
-### 3. Advanced High-Performance Benchmarking
-To test the full scalability of the system on high-performance CPUs (e.g., 12 cores / 20 threads), use the following command:
+Key options:
+- `--input`: Path to an image or directory of images.
+- `--outdir`: Directory where `benchmark_results.csv` and `benchmark_plot.png` will be saved.
+- `--workers`: A list of worker counts to test (e.g., `1 2 4 8`).
+- `--trials`: Number of repetitions per config (default: 3).
+- `--sample`: Number of images sampled from the input directory (default: 5).
+- `--resize`: Resize images to a max dimension to speed benchmarking (default: 256; set `0` to disable).
 
+Examples:
+
+Quick test:
 ```bash
-python -m scripts.benchmark --input food-101-dataset/images --outdir out/bench --workers 1 4 8 12 16 20 --sample 20
+# Save results directly to the top-level `out/` directory
+python -m scripts.benchmark --input food-101-dataset/images --outdir out --workers 1 2 4 --sample 5
+
+# Or, use a sub-directory for this benchmark run (e.g. `out/bench`)
+python -m scripts.benchmark --input food-101-dataset/images --outdir out/bench --workers 1 2 4 --sample 5
 ```
 
-Command Breakdown:
+Full scaling test:
+```bash
+# Save results directly to the top-level `out/` directory
+python -m scripts.benchmark --input food-101-dataset/images --outdir out --workers 1 4 8 12 16 20 --sample 20 --trials 5
+```
 
-`python -m scripts.benchmark`: Runs the benchmark script as a module to correctly handle imports.
+**Note:** `--outdir` can be any directory; the script will create it if it does not already exist and will write `benchmark_results.csv` and `benchmark_plot.png` into that directory.
 
-`--input`: Recursively searches the dataset directory.
-
-`--workers 1 4 8 12 16 20`: Tests specific milestones:
-
-- 1: Serial baseline.
-- 4, 8: Linear scaling check.
-- 12: Physical core limit.
-- 16, 20: Logical thread limit (Hyper-threading).
-
-`--sample 20`: Uses 20 random images for a statistically significant test.
-
-### 4. Run Tests
-Verify that parallel outputs mathematically match serial outputs.
+### 3) Run Tests
+Ensure correctness (parallel outputs match serial):
 
 ```bash
 pytest
 ```
 
-## � Performance Analysis
-After running the benchmark script, check the out/bench folder for:
+---
 
-- `benchmark_results.csv`: Raw timing data for every trial.
-- `benchmark_plot.png`: A graph visualizing the speedup of Parallel methods vs. Serial as worker count increases.
+## 📊 Performance Analysis
+After running benchmarks, check `out/bench` for:
 
-## 📝 Assignment Details
-Course: CST435
+- `benchmark_results.csv` — Raw timing data for every trial.
+- `benchmark_plot.png` — Visual speedup plot comparing parallel methods versus serial baseline.
 
-Option Selected: Python Implementation
+---
 
-Requirements Met:
-
-- Implemented all 5 specific filters.
-- Implemented multiprocessing module.
-- Implemented concurrent.futures module.
-
-## �📂 Project Structure
+## 📂 Project Structure
 
 ```text
 CST435_Assignment2_ImageProcessing/
-├── food-101-dataset/       # Dataset directory
+├── food-101-dataset/       # Dataset (images, metadata)
 ├── out/                    # Generated outputs (images, plots, CSVs)
 ├── scripts/                # Entry points
 │   ├── benchmark.py        # Performance testing script
 │   └── run_pipeline.py     # Single image verification script
-├── src/
-│   └── image_processing/
-│       ├── filters.py      # Core filter logic (Grayscale, Sobel, etc.)
-│       ├── parallel_futures.py        # Implementation using concurrent.futures
-│       └── parallel_multiprocessing.py # Implementation using multiprocessing
+├── image_processing/       # Core package
+│   ├── filters.py          # Core filter implementations
+│   ├── utils.py            # Array helpers, workers
+│   ├── parallel_futures.py # concurrent.futures implementation
+│   └── parallel_multiprocessing.py # multiprocessing implementation
 ├── test_filters.py         # Pytest unit tests
-├── README.md               # Documentation
-└── requirements.txt        # Project dependencies
+├── README.md               # This file
+└── requirements.txt        # Dependencies
 ```
+
+---
+
+## 💡 Notes & Tips
+- Use `--workers 1` as the serial baseline when benchmarking.
+- The halo/overlap is critical for correct convolution across chunk boundaries — do not remove it.
+- For reproducible benchmarking, fix random seeds where sampling is involved.
+
+---

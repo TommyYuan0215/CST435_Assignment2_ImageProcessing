@@ -1,14 +1,6 @@
 """
 Benchmark script to compare serial vs multiprocessing vs concurrent.futures pipelines.
-
-Usage examples:
-
-# Benchmark a single image, workers 1,2,4, 3 trials, save output in ./out/bench
-python scripts/benchmark.py --input image.jpg --outdir out/bench --workers 1 2 4 --trials 3 --sample 1 --resize 256
-
-# Benchmark a directory (sample 10 images)
-python scripts/benchmark.py --input ./subset --outdir out/bench --workers 1 2 4 8 --trials 3 --sample 10 --resize 256
-
+Usage: python -m scripts.benchmark --input food-101-dataset/images --outdir out/bench
 """
 import argparse
 import csv
@@ -21,17 +13,15 @@ import matplotlib.pyplot as plt
 from PIL import Image
 import numpy as np
 
-from src.image_processing.filters import apply_pipeline
-from src.image_processing.parallel_multiprocessing import apply_pipeline_multiprocessing
-from src.image_processing.parallel_futures import apply_pipeline_futures
+from image_processing.filters import apply_pipeline
+from image_processing.parallel_multiprocessing import apply_pipeline_multiprocessing
+from image_processing.parallel_futures import apply_pipeline_futures
 
 STEPS = [('grayscale', {}), ('gaussian', {}), ('sobel', {}), ('sharpen', {'alpha': 1.0})]
-
 
 def collect_images(path: Path, sample: int):
     if path.is_file():
         return [path]
-    # directory: gather typical image files
     exts = ('.jpg', '.jpeg', '.png', '.bmp')
     imgs = []
     for root, _, files in os.walk(path):
@@ -43,7 +33,6 @@ def collect_images(path: Path, sample: int):
         imgs = imgs[:sample]
     return imgs
 
-
 def run_trial_on_image(img_path: Path, resize: int, workers_list, trials, out_rows):
     img = Image.open(img_path).convert('RGB')
     if resize:
@@ -52,27 +41,28 @@ def run_trial_on_image(img_path: Path, resize: int, workers_list, trials, out_ro
         if scale < 1.0:
             img = img.resize((int(w*scale), int(h*scale)), Image.BILINEAR)
 
-    # serial
+    # Serial
     for t in range(trials):
         t0 = time.perf_counter()
         _ = apply_pipeline(img, STEPS)
         elapsed = time.perf_counter() - t0
         out_rows.append({'image': str(img_path.name), 'pipeline': 'serial', 'workers': 1, 'trial': t, 'elapsed': elapsed})
 
-    # multiprocessing and futures for each worker count
+    # Parallel
     for wcount in workers_list:
+        # Multiprocessing
         for t in range(trials):
             t0 = time.perf_counter()
             _ = apply_pipeline_multiprocessing(img, STEPS, num_workers=wcount)
             elapsed = time.perf_counter() - t0
             out_rows.append({'image': str(img_path.name), 'pipeline': 'multiprocessing', 'workers': wcount, 'trial': t, 'elapsed': elapsed})
 
+        # Futures
         for t in range(trials):
             t0 = time.perf_counter()
             _ = apply_pipeline_futures(img, STEPS, num_workers=wcount)
             elapsed = time.perf_counter() - t0
             out_rows.append({'image': str(img_path.name), 'pipeline': 'futures', 'workers': wcount, 'trial': t, 'elapsed': elapsed})
-
 
 def save_csv(rows, outdir: Path):
     outdir.mkdir(parents=True, exist_ok=True)
@@ -84,15 +74,12 @@ def save_csv(rows, outdir: Path):
             writer.writerow(r)
     return csv_path
 
-
 def plot_results(rows, outdir: Path):
-    # Aggregate mean elapsed per pipeline & workers
     agg = defaultdict(list)
     for r in rows:
         key = (r['pipeline'], int(r['workers']))
         agg[key].append(r['elapsed'])
 
-    # prepare series
     pipelines = ['serial', 'multiprocessing', 'futures']
     plt.figure(figsize=(8, 5))
     for p in pipelines:
@@ -114,15 +101,14 @@ def plot_results(rows, outdir: Path):
     plt.close()
     return outpng
 
-
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--input', '-i', required=True, help='Input image file or directory')
     parser.add_argument('--outdir', '-o', required=True, help='Output directory for CSV and plots')
-    parser.add_argument('--workers', type=int, nargs='+', default=[1, 2, 4], help='List of worker counts to test (for parallel pipelines)')
-    parser.add_argument('--trials', type=int, default=3, help='Number of trials per configuration')
-    parser.add_argument('--sample', type=int, default=5, help='If input is directory, number of images to sample (first N)')
-    parser.add_argument('--resize', type=int, default=256, help='Max dimension to resize images to for quicker runs (0 to disable)')
+    parser.add_argument('--workers', type=int, nargs='+', default=[1, 2, 4], help='Worker counts')
+    parser.add_argument('--trials', type=int, default=3, help='Trials per configuration')
+    parser.add_argument('--sample', type=int, default=5, help='Number of images to sample')
+    parser.add_argument('--resize', type=int, default=256, help='Resize max dimension')
     args = parser.parse_args()
 
     imgs = collect_images(Path(args.input), args.sample)
@@ -133,7 +119,7 @@ def main():
     workers_list = sorted(set([int(w) for w in args.workers if w > 0]))
     rows = []
 
-    print(f'Benchmarking {len(imgs)} images, workers={workers_list}, trials={args.trials}, resize={args.resize}')
+    print(f'Benchmarking {len(imgs)} images, workers={workers_list}')
     for img_path in imgs:
         print('Running:', img_path.name)
         run_trial_on_image(img_path, args.resize, workers_list, args.trials, rows)
@@ -141,10 +127,8 @@ def main():
     outdir = Path(args.outdir)
     csv_path = save_csv(rows, outdir)
     png_path = plot_results(rows, outdir)
-
     print('Saved CSV:', csv_path)
     print('Saved plot:', png_path)
-
 
 if __name__ == '__main__':
     main()
