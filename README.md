@@ -68,36 +68,84 @@ pip install -r requirements.txt
 
 ---
 
-## 🚀 Usage
+## 📦 Dataset Download
+This project uses the Food-101 dataset. You must download and extract it manually before running the benchmark.
+
+1. Download: Go to the dataset page on Kaggle: https://www.kaggle.com/datasets/dansbecker/food-101
+2. Extract: Unzip the downloaded file into the root directory of this project.
+3. Rename: Ensure the extracted folder is named food-101-dataset.
+
+Your directory structure should look like this:
+
+```text
+CST435_Assignment2_ImageProcessing/
+├── food-101-dataset/       <-- Extracted dataset folder
+│   ├── images/             <-- Contains the image subfolders
+│   └── meta/
+├── scripts/
+├── image_processing/
+└── ...
+```
+
+---
+
+## �🚀 Usage
 
 > All commands should be run from the project root directory.
 
-### 1) Single Image Verification (`run_pipeline.py`)
-Run the serial and both parallel pipelines on a single image to verify that outputs match:
+### 1) Single Image Verification (Visual Correctness)
+
+**Script:** `scripts/run_pipeline.py`
+
+**Purpose:** Runs the Serial, Multiprocessing, and Concurrent Futures pipelines on a single image and saves the outputs for comparison. This is ideal for the Live Demonstration part of your video where you need to show visual correctness.
+
+**Command:**
 
 ```bash
 python -m scripts.run_pipeline <input_image> <output_prefix> [--workers N]
+```
 
-# Example
+**Example:**
+
+```bash
 python -m scripts.run_pipeline image.png out/test_result --workers 4
 ```
 
-This produces files like `out/test_result_serial.png`, `out/test_result_mp.png`, `out/test_result_futures.png` for visual comparison.
+**Output:**
 
-### 2) Benchmarking (`benchmark.py`)
-Run performance tests on a directory or single image.
+Generates three image files (e.g., `out/test_result_serial.png`, `out/test_result_mp.png`, `out/test_result_futures.png`) so you can visually prove the logic is correct.
+
+### 2) Performance Benchmarking (Speedup Analysis)
+
+**Script:** `scripts/benchmark.py`
+
+**Purpose:** Runs performance tests on a directory of images or a single image using multiple worker counts (e.g., 1, 2, 4, 8) to compare execution times. This is essential for the Performance Analysis section of your technical report.
+
+**Command:**
 
 ```bash
-python -m scripts.benchmark --input <path> --outdir <path> --workers 1 2 4 --sample 5
+python -m scripts.benchmark --input <path> --outdir <path> --workers <list> --sample <N>
 ```
+
+**Example:**
+
+```bash
+python -m scripts.benchmark --input food-101-dataset/images --outdir out/bench --workers 1 2 4 --sample 5
+```
+
+**Output:**
+
+- `benchmark_results.csv`: Contains raw timing data for every trial.
+- `benchmark_plot.png`: A visual plot showing the speedup of parallel methods versus the serial baseline.
 
 Key options:
 - `--input`: Path to an image or directory of images.
 - `--outdir`: Directory where `benchmark_results.csv` and `benchmark_plot.png` will be saved.
-- `--workers`: A list of worker counts to test (e.g., `1 2 4 8`).
+- `--workers`: A list of worker counts to test (e.g., `1 2 4 8 12`).
 - `--trials`: Number of repetitions per config (default: 3).
 - `--sample`: Number of images sampled from the input directory (default: 5).
 - `--resize`: Resize images to a max dimension to speed benchmarking (default: 256; set `0` to disable).
+- `--sample 0`: When set to 0, process *all* images found under the input directory (no sampling). Use with care for full-dataset runs.
 
 Examples:
 
@@ -119,19 +167,27 @@ python -m scripts.benchmark --input food-101-dataset/images --outdir out --worke
 **Note:** `--outdir` can be any directory; the script will create it if it does not already exist and will write `benchmark_results.csv` and `benchmark_plot.png` into that directory.
 
 ### 3) Run Tests
-Ensure correctness (parallel outputs match serial):
+
+We run unit tests with pytest. To make the test layout clearer, test files are located in the `tests/` directory (e.g., `tests/test_filters.py`).
+
+**Run tests:**
 
 ```bash
+# from the project root
 pytest
 ```
+
+Note: If you move or add tests, ensure they follow the `test_*.py` naming convention so `pytest` discovers them automatically.
 
 ---
 
 ## 📊 Performance Analysis
-After running benchmarks, check `out/bench` for:
+After running benchmarks, check the output directory you passed to `--outdir` (for example `out/` or `out/bench`) for:
 
 - `benchmark_results.csv` — Raw timing data for every trial.
 - `benchmark_plot.png` — Visual speedup plot comparing parallel methods versus serial baseline.
+
+If you ran a full dataset benchmark (e.g., `--sample 0`) the CSV may be large; consider compressing or sampling the CSV when analyzing results.
 
 ---
 
@@ -139,20 +195,24 @@ After running benchmarks, check `out/bench` for:
 
 ```text
 CST435_Assignment2_ImageProcessing/
-├── food-101-dataset/       # Dataset (images, metadata)
+├── food-101-dataset/       # Dataset (images, metadata) — use `scripts/download_dataset.py` to fetch
 ├── out/                    # Generated outputs (images, plots, CSVs)
 ├── scripts/                # Entry points
-│   ├── benchmark.py        # Performance testing script
-│   └── run_pipeline.py     # Single image verification script
+│   ├── benchmark.py            # Performance testing script
+│   ├── run_pipeline.py        # Single image verification script
+│   └── download_dataset.py    # Helper to download Kaggle datasets (e.g., Food-101)
 ├── image_processing/       # Core package
 │   ├── filters.py          # Core filter implementations
 │   ├── utils.py            # Array helpers, workers
 │   ├── parallel_futures.py # concurrent.futures implementation
 │   └── parallel_multiprocessing.py # multiprocessing implementation
-├── test_filters.py         # Pytest unit tests
+├── tests/                  # Pytest tests (moved from top-level)
+│   └── test_filters.py
 ├── README.md               # This file
 └── requirements.txt        # Dependencies
 ```
+
+> Note: If you already downloaded the dataset by other means, ensure the top-level `food-101-dataset/images/` path exists before running benchmarks.
 
 ---
 
