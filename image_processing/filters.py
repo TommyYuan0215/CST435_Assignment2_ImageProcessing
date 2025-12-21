@@ -54,10 +54,11 @@ def sobel_edges(arr: np.ndarray) -> np.ndarray:
     gy = convolve2d_vectorized(arr, ky)
     
     mag = np.hypot(gx, gy)
-    # Normalize
-    max_val = mag.max()
-    if max_val > 0:
-        mag *= 255.0 / max_val
+    
+    # FIX: Remove dynamic normalization (mag.max()) which breaks parallel consistency.
+    # Instead, simply clip values to the 0-255 range.
+    mag = np.clip(mag, 0, 255)
+    
     return mag
 
 def sharpen(arr: np.ndarray, alpha: float = 1.0) -> np.ndarray:

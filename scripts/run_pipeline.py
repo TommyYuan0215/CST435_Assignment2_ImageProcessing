@@ -7,7 +7,6 @@ import time
 import numpy as np
 from PIL import Image
 
-# UPDATED IMPORTS: Removed 'src.' prefix
 from image_processing.filters import apply_pipeline
 from image_processing.parallel_multiprocessing import apply_pipeline_multiprocessing
 from image_processing.parallel_futures import apply_pipeline_futures
