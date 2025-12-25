@@ -173,12 +173,12 @@ def main():
 
     # 1. Run Serial (Saves the sample image)
     run_serial_benchmark(imgs, args.resize, args.trials, rows, save_dir)
-
-    # 2. Run Multiprocessing (Pure benchmark)
-    run_multiprocessing_benchmark(imgs, args.resize, workers_list, args.trials, rows)
-
-    # 3. Run Futures (Pure benchmark)
+    
+    # 2. Run Futures (Pure benchmark)
     run_futures_benchmark(imgs, args.resize, workers_list, args.trials, rows)
+
+    # 3. Run Multiprocessing (Pure benchmark)
+    run_multiprocessing_benchmark(imgs, args.resize, workers_list, args.trials, rows)
 
     csv_path = save_csv(rows, outdir_base)
     png_path = plot_results(rows, outdir_base)
