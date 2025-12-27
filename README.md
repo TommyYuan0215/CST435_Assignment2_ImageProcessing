@@ -100,13 +100,13 @@ CST435_Assignment2_ImageProcessing/
 **Command:**
 
 ```bash
-python main.py --workers <list> --sample <N>
+python -m main.py --workers <list> --sample <N>
 ```
 
 **Example:**
 
 ```bash
-python main.py --workers 1 2 4 --sample 5
+python -m main.py --workers 1 2 4 --sample 5
 ```
 
 **Output:**
@@ -122,12 +122,7 @@ Key options:
 - `--trials`: Number of repetitions per config (default: 1).
 - `--sample`: Number of images sampled from the input directory (default: 5).
 - `--resize`: Resize images to a max dimension to speed benchmarking (default: 0， which will be use original size).
-- `--sample 0`: When set to 0, process *all* images found under the input directory (no sampling). Use with care for full-dataset runs.
-
-Examples:
-```bash
-python main.py --workers 1 2 4 8 --sample 1000
-```
+- `--sample`: When set to 0, process *all* images found under the input directory (no sampling). Use with care for full-dataset runs.
 
 **Note:** `--outdir` can be any directory; the script will create it if it does not already exist and will write `benchmark_results.csv` and `benchmark_plot.png` into that directory.
 
