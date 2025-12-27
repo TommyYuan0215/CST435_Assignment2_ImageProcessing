@@ -43,9 +43,9 @@ The pipeline applies the following five operations, in order:
 ## Installation
 
 1. Install Python Environment
-- Before running the project, ensure you have Python installed on your system. This project requires Python 3.10 or higher.
+Before running the project, ensure you have Python installed on your system. This project requires Python 3.10 or higher.
 
-- For Windows User:
+- For Windows Users:
   1. Download: Go to the official [Python Downloads page](https://www.python.org/downloads/windows/)
   2. Install: Run the installer and crucially check the box that says "Add python.exe to PATH" before clicking "Install Now."
   3. Verify: Open PowerShell or Command Prompt and type:
@@ -54,7 +54,7 @@ The pipeline applies the following five operations, in order:
   python --version
   ```
 
-- For macOS User:
+- For macOS Users:
   - Install Python using Homebrew:
 
   ```bash
@@ -62,7 +62,7 @@ The pipeline applies the following five operations, in order:
   ```
   - Or download the installer from python.org.
 
-- For Linux User
+- For Linux Users:
   - Use your distribution's package manager to install Python and the virtual environment module:
 
   ```bash
