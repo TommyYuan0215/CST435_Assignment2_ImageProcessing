@@ -100,13 +100,13 @@ CST435_Assignment2_ImageProcessing/
 **Command:**
 
 ```bash
-python -m main.py --workers <list> --sample <N>
+python main.py --workers <list> --sample <N>
 ```
 
 **Example:**
 
 ```bash
-python -m main.py --workers 1 2 4 --sample 5
+python main.py --workers 1 2 4 --sample 5
 ```
 
 **Output:**
