@@ -42,7 +42,7 @@ The pipeline applies the following five operations, in order:
 
 ## Installation
 
-1. Install Python Environment
+### 1) Install Python Environment
 Before running the project, ensure you have Python installed on your system. This project requires Python 3.10 or higher.
 
 - For Windows Users:
@@ -74,14 +74,14 @@ Before running the project, ensure you have Python installed on your system. Thi
   sudo dnf install python3
   ```
 
-2. Clone the repository:
+### 2) Clone the repository:
 
 ```bash
 git clone <repository_url>
 cd CST435_Assignment2_ImageProcessing
 ```
 
-3. Create and activate a virtual environment:
+### 3) Create and activate a virtual environment:
 
 ```bash
 python -m venv .venv
@@ -97,7 +97,7 @@ source .venv/bin/activate
 .venv\Scripts\activate
 ```
 
-4. Install dependencies:
+### 4) Install dependencies:
 
 ```bash
 pip install -r requirements.txt
