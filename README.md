@@ -42,29 +42,66 @@ The pipeline applies the following five operations, in order:
 
 ## Installation
 
-1. Clone the repository:
+1. Install Python Environment
+- Before running the project, ensure you have Python installed on your system. This project requires Python 3.10 or higher.
+
+- For Windows User:
+  1. Download: Go to the official [Python Downloads page](https://www.python.org/downloads/windows/)
+  2. Install: Run the installer and crucially check the box that says "Add python.exe to PATH" before clicking "Install Now."
+  3. Verify: Open PowerShell or Command Prompt and type:
+
+  ```bash
+  python --version
+  ```
+
+- For macOS User:
+  - Install Python using Homebrew:
+
+  ```bash
+  brew install python
+  ```
+  - Or download the installer from python.org.
+
+- For Linux User
+  - Use your distribution's package manager to install Python and the virtual environment module:
+
+  ```bash
+  # Ubuntu/Debian/Mint
+  sudo apt update
+  sudo apt install python3 python3-venv python3-pip
+
+  # Fedora
+  sudo dnf install python3
+  ```
+
+2. Clone the repository:
 
 ```bash
 git clone <repository_url>
 cd CST435_Assignment2_ImageProcessing
 ```
 
-2. Create and activate a virtual environment:
+3. Create and activate a virtual environment:
 
 ```bash
 python -m venv .venv
-# macOS / Linux
+```
+
+```bash
+# For macOS / Linux user
 source .venv/bin/activate
-# Windows
+```
+
+```bash
+# For Windows user
 .venv\Scripts\activate
 ```
 
-3. Install dependencies:
+4. Install dependencies:
 
 ```bash
 pip install -r requirements.txt
 ```
-
 ---
 
 ## Dataset Download
