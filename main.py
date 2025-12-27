@@ -148,10 +148,10 @@ def plot_results(rows, outdir: Path):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--input', '-i', required=True, help='Input image file or directory')
-    parser.add_argument('--outdir', '-o', required=True, help='Output directory for CSV and plots')
+    parser.add_argument('--input', '-i', default='food-101-dataset/images', help='Input image file or directory')
+    parser.add_argument('--outdir', '-o', default='out', help='Output directory for CSV and plots')
     parser.add_argument('--workers', type=int, nargs='+', default=[1, 2, 4], help='Worker counts')
-    parser.add_argument('--trials', type=int, default=3, help='Trials per configuration')
+    parser.add_argument('--trials', type=int, default=1, help='Trials per configuration')
     parser.add_argument('--sample', type=int, default=5, help='Number of images to sample')
     parser.add_argument('--resize', type=int, default=0, help='Resize max dimension (0=Original Size)')
     args = parser.parse_args()
