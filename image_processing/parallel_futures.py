@@ -24,14 +24,19 @@ def apply_pipeline_futures(img: Image.Image, steps: list, num_workers: int = 4) 
     overlap = calculate_required_overlap(steps)
     chunks_meta = split_rows(arr, num_workers, overlap=overlap)
     
-    # 3. Prepare tasks
-    tasks = [(arr[s:e, :], meta, steps) for (s, *_, e), meta in zip(chunks_meta, chunks_meta)]
+    # 3. Prepare tasks with index and array copies for thread safety
+    tasks = [
+        (i, arr[s:e, :].copy(), meta, steps) 
+        for i, ((s, *_, e), meta) in enumerate(zip(chunks_meta, chunks_meta))
+    ]
 
     # 4. Execute using the CACHED global executor
-    results = []
-    # Use the global _EXECUTOR directly
     futures = [_EXECUTOR.submit(process_chunk_task, task) for task in tasks]
-    results = [f.result() for f in futures]
+    results_with_index = [f.result() for f in futures]
+    
+    # Sort by index to ensure deterministic ordering
+    results_with_index.sort(key=lambda x: x[0])
+    results = [r[1] for r in results_with_index]
             
     # 5. Reassemble
     out = np.vstack(results)

@@ -39,13 +39,14 @@ def calculate_required_overlap(steps: list) -> int:
 def process_chunk_task(args):
     """
     Worker function shared by multiprocessing and futures.
-    args: (arr_chunk, (s, core_start, core_end, e), steps)
+    args: (index, arr_chunk, (s, core_start, core_end, e), steps)
+    Returns: (index, processed_array)
     """
     # Import locally to avoid circular imports during module loading,
     # but strictly required for pickle-based multiprocessing.
     from .filters import apply_pipeline_to_array
 
-    arr_chunk, (s, core_start, core_end, e), steps = args
+    index, arr_chunk, (s, core_start, core_end, e), steps = args
     
     # Process the array directly without converting to PIL and back repeatedly
     out_arr = apply_pipeline_to_array(arr_chunk, steps)
@@ -53,4 +54,13 @@ def process_chunk_task(args):
     # Crop the overlap/halo
     top = core_start - s
     bottom = top + (core_end - core_start)
-    return out_arr[top:bottom, :]
+    
+    # Handle both 2D (grayscale) and 3D (color) arrays explicitly
+    if out_arr.ndim == 2:
+        cropped = out_arr[top:bottom, :]
+    elif out_arr.ndim == 3:
+        cropped = out_arr[top:bottom, :, :]
+    else:
+        cropped = out_arr[top:bottom]
+    
+    return (index, cropped)
